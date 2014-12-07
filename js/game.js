@@ -71,9 +71,13 @@ Game.prototype = {
 			this.boardWrapper.append(newTile);
 			this.board[i][j] = newTile;
 		}.bind(this));
+		
+		var startingTile = this.board[0][Math.floor(this.size / 2)];
+		startingTile.attr('tile-type', 'start');
+		startingTile.attr('rotation', 'down');
 
-		this.board[this.size - 1][Math.floor(this.size / 2)].attr('tile-type', 'accept');
-		this.board[0][Math.floor(this.size / 2)].attr('tile-type', 'start');
+		var acceptTile = this.board[this.size - 1][Math.floor(this.size / 2)];
+		acceptTile.attr('tile-type', 'accept');
 	},
 
 	initializeRobot: function () {

@@ -8,6 +8,7 @@
   display: inline-block;
   width: 50px;
   height: 50px;
+  background-size: cover;
 }
 
 .tile[tile-type=blank] {
@@ -15,20 +16,19 @@
 }
 
 .tile[tile-type=mover] {
-	background-image: url(sprites/left.png);
-	background-size: cover;  
+	background-image: url(sprites/mover.png);
 }
 
 .tile[tile-type=reader] {
-	background: red;
+	background-image: url(sprites/reader.png);
 }
 
 .tile[tile-type=start] {
-	background: gray;
+	background-image: url(sprites/start.png);
 }
 
 .tile[tile-type=accept] {
-	background: green;
+	background-image: url(sprites/accept.png);
 }
 
 [rotation=left] {
