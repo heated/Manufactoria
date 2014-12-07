@@ -1,7 +1,48 @@
-canvas {
-    border: 1px solid black;
+#board-wrapper {
+  height: 450px;
+  width: 450px;
+  border: black 2px solid;
 }
 
-.arrow {
+.tile {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+}
+
+.tile[tile-type=blank] {
+	background: white;
+}
+
+.tile[tile-type=mover] {
 	background-image: url(sprites/left.png);
+	background-size: cover;  
+}
+
+.tile[tile-type=reader] {
+	background: red;
+}
+
+.tile[tile-type=start] {
+	background: gray;
+}
+
+.tile[tile-type=accept] {
+	background: green;
+}
+
+[rotation=left] {
+	transform: rotate(0turn)
+}
+
+[rotation=up] {
+	transform: rotate(0.25turn)
+}
+
+[rotation=right] {
+	transform: rotate(0.5turn)
+}
+
+[rotation=down] {
+	transform: rotate(0.75turn)
 }
