@@ -1,0 +1,7 @@
+canvas {
+    border: 1px solid black;
+}
+
+.arrow {
+	background-image: url(sprites/left.png);
+}
