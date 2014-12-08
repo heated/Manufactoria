@@ -45,9 +45,9 @@ var Game = function () {
 Game.prototype = {
 	initializeGlobals: function () {
 		this.size = 9;
+		this.halfSize = Math.floor(this.size / 2);
 		this.boardWrapper = $('#board-wrapper');
 		this.tileSize = this.boardWrapper.width() / this.size;
-		this.tiles = ['blank', 'left', 'up', 'right', 'down', 'start', 'accept'];
 		this.flipped = false;
 		this.rotation = 'down';
 		this.tileType = 'mover';
@@ -56,34 +56,36 @@ Game.prototype = {
 	initializeBoardState: function () {
 		this.memory = 'aababababaab';
 		this.initializeBoard();
-		this.initializeRobot();
 	},
 
 	initializeBoard: function () {
-		var size = this.size;
-		this.board = _.map(new Array(size), function () {
-			return new Array(size);
-		});
+		this.board = _.map(new Array(this.size), function () {
+			return new Array(this.size);
+		}, this);
 
 		// fill the board with blank tiles
+		// note: this.board[y][x] refers to the tile x to the right and y down
 		this.boardEach(function (tile, i, j) {
 			var newTile = $('<div class="tile" tile-type="blank">');
 			this.boardWrapper.append(newTile);
 			this.board[i][j] = newTile;
 		}.bind(this));
-		
-		var startingTile = this.board[0][Math.floor(this.size / 2)];
+
+		var startingTile = this.board[0][this.halfSize];
 		startingTile.attr('tile-type', 'start');
 		startingTile.attr('rotation', 'down');
 
-		var acceptTile = this.board[this.size - 1][Math.floor(this.size / 2)];
+		var acceptTile = this.board[this.size - 1][this.halfSize];
 		acceptTile.attr('tile-type', 'accept');
 	},
 
 	initializeRobot: function () {
 		// begin at the top middle of the board
-		this.posX = Math.floor(this.size / 2);
+		this.posX = this.halfSize;
 		this.posY = 0;
+
+		this.robot = $('<div id="robot">');
+		this.updateRobotPos();
 	},
 
 	initializeListeners: function () {
@@ -95,15 +97,22 @@ Game.prototype = {
 
 		// Test the machine.
 		$('#run').click(function () {
+			self.initializeRobot();
 			self.gameLoop = setInterval(self.iterate.bind(self), 1000);
 		});
 
 		// handle keyboard presses
+		this.initializeKeyboardListeners();
+	},
+
+	initializeKeyboardListeners: function () {
 		key('left', this.changeDirection.bind(this, 'left'));
 		key('up', this.changeDirection.bind(this, 'up'));
 		key('right', this.changeDirection.bind(this, 'right'));
 		key('down', this.changeDirection.bind(this, 'down'));
+
 		key('space', this.flipOrientation.bind(this));
+
 		key('0', this.setTileType.bind(this, 'blank'));
 		key('1', this.setTileType.bind(this, 'mover'));
 		key('2', this.setTileType.bind(this, 'reader'));
@@ -134,57 +143,11 @@ Game.prototype = {
 		tile.attr('rotation', this.rotation);
 		tile.attr('flipped', this.flipped);
 		tile.attr('tile-type', this.tileType);
-
-
-		// increment the tile number
-		// this.board[tileX][tileY] = (this.board[tileX][tileY] + 1) % (this.tiles.length - 2);
-		// I'm just going to say this is the stupidest idea ever and will probably have to be rewritten twice. - Edward
 	},
 
 	displayGame: function () {
-		// this.displayBoard();
-		this.displayRobot();
 		this.displayMemory();
 		this.displayPlacementInfo();
-	},
-
-	// displayBoard: function () {
-	// 	this.boardEach(function (tile, i, j) {
-	// 		// Not sure if I chose great style here.
-	// 		// switch (this.board[i][j]) {
-	// 		// case 0: //blank
-	// 		// 	this.context.fillStyle = 'white';
-	// 		// 	break;
-	// 		// case 1: //left
-	// 		// 	this.context.fillStyle = 'red';
-	// 		// 	break;
-	// 		// case 2: //up
-	// 		// 	this.context.fillStyle = 'orange';
-	// 		// 	break;
-	// 		// case 3: //right
-	// 		// 	this.context.fillStyle = 'yellow';
-	// 		// 	break;
-	// 		// case 4: //down
-	// 		// 	this.context.fillStyle = 'green';
-	// 		// 	break;
-	// 		// case 5: //start
-	// 		// 	this.context.fillStyle = 'blue';
-	// 		// 	break;
-	// 		// case 6: //accept
-	// 		// 	this.context.fillStyle = 'purple';
-	// 		// 	break;
-	// 		// }
-
-	// 		// this.context.fillRect(i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);
-	// 	}.bind(this));
-	// },
-
-	displayRobot: function () {
-		// this.context.fillStyle = 'black';
-		// this.context.fillRect(this.posX * this.tileSize + 10,
-							  // this.posY * this.tileSize + 10,
-							  // this.tileSize - 20,
-							  // this.tileSize - 20);
 	},
 
 	displayMemory: function () {
@@ -198,41 +161,59 @@ Game.prototype = {
 	},
 
 	iterate: function () {
-		switch (this.board[this.posX][this.posY]) {
-		case 0: //blank
-			// you lose
+		var currentTile = this.board[this.posY][this.posX];
+		switch (currentTile.attr('tile-type')) {
+		case 'blank':
+			// reject
 			alert('Incorrect');
-			this.restart();
+			this.stop();
 			break;
-		case 1: //left
-			this.posX -= 1;
+		case 'mover':
+			this.moveRobot(currentTile.attr('rotation'));
 			break;
-		case 2: //up
-			this.posY -= 1;
+		case 'reader':
+			this.moveRobot(currentTile.attr('rotation'));
 			break;
-		case 3: //right
-			this.posX += 1;
+		case 'start':
+			this.moveRobot(currentTile.attr('rotation'));
 			break;
-		case 4: //down
-			this.posY += 1;
-			break;
-		case 5: //start
-			this.posY += 1;
-			break;
-		case 6: //accept
-			// you win
+		case 'accept':
 			alert('Correct!');
-			this.restart();
+			this.stop();
 			break;
 		}
 
 		this.displayGame();
 	},
 
-	restart: function () {
+	moveRobot: function (direction) {
+		switch (direction) {
+		case 'left':
+			this.posX--;
+			break;
+		case 'up':
+			this.posY--;
+			break;
+		case 'right':
+			this.posX++;
+			break;
+		case 'down':
+			this.posY++;
+			break;
+		}
+
+		this.updateRobotPos();
+	},
+
+	updateRobotPos: function () {
+		this.robot.detach();
+		this.board[this.posY][this.posX].append(this.robot);
+	},
+
+	stop: function () {
 		clearInterval(this.gameLoop);
 		this.gameLoop = null;
-		this.initializeRobot();
+		this.robot.detach();
 	},
 
 	boardEach: function (func) {
