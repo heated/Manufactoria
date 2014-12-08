@@ -49,8 +49,9 @@ Game.prototype = {
 		this.boardWrapper = $('#board-wrapper');
 		this.tileSize = this.boardWrapper.width() / this.size;
 		this.flipped = false;
-		this.rotation = 'down';
-		this.tileType = 'mover';
+		this.placementInfo = $('#placement-info');
+		this.changeDirection('down');
+		this.setTileType('mover');
 	},
 
 	initializeBoardState: function () {
@@ -89,8 +90,14 @@ Game.prototype = {
 	},
 
 	initializeListeners: function () {
+		this.initializeMouseListeners();
+		this.initializeKeyboardListeners();
+	},
+
+	initializeMouseListeners: function () {
 		var self = this;
 
+		// add placement click handlers to all the board tiles
 		this.boardEach(function (tile, i, j) {
 			tile.click(self.handleClick.bind(self));
 		});
@@ -101,8 +108,15 @@ Game.prototype = {
 			self.gameLoop = setInterval(self.iterate.bind(self), 1000);
 		});
 
-		// handle keyboard presses
-		this.initializeKeyboardListeners();
+		// create hovering tile placement indicator
+		$(document).mousemove(this.updatePlacementInfoLocation.bind(this));
+	},
+
+	updatePlacementInfoLocation: function (event) {
+		this.placementInfo.css({
+			left:  event.pageX - this.placementInfo.width() / 2,
+			top:   event.pageY - this.placementInfo.height() / 2
+		});
 	},
 
 	initializeKeyboardListeners: function () {
@@ -120,17 +134,17 @@ Game.prototype = {
 
 	changeDirection: function (direction) {
 		this.rotation = direction;
-		this.displayPlacementInfo();
+		this.placementInfo.attr('rotation', direction);
 	},
 
 	flipOrientation: function () {
 		this.flipped = !this.flipped;
-		this.displayPlacementInfo();
+		this.placementInfo.attr('flipped', this.flipped);
 	},
 
 	setTileType: function (tileType) {
 		this.tileType = tileType;
-		this.displayPlacementInfo();
+		this.placementInfo.attr('tile-type', tileType);
 	},
 
 	handleClick: function (event) {
@@ -147,17 +161,10 @@ Game.prototype = {
 
 	displayGame: function () {
 		this.displayMemory();
-		this.displayPlacementInfo();
 	},
 
 	displayMemory: function () {
 		$('#memory').text(this.memory);
-	},
-
-	displayPlacementInfo: function () {
-		$('#flip').text(this.flipped ? 'flipped!' : 'not flipped!');
-		$('#rotation').text(this.rotation);
-		$('#tile-type').text(this.tileType);
 	},
 
 	iterate: function () {

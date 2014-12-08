@@ -55,3 +55,27 @@
 [rotation=down] {
 	transform: rotate(0.75turn)
 }
+
+/* idk how to do this more simply */
+[flipped=true][rotation=left] {
+  transform: scaleY(-1) rotate(0turn)
+}
+
+[flipped=true][rotation=up] {
+  transform: scaleX(-1) rotate(0.25turn)
+}
+
+[flipped=true][rotation=right] {
+  transform: scaleY(-1) rotate(0.5turn)
+}
+
+[flipped=true][rotation=down] {
+  transform: scaleX(-1) rotate(0.75turn)
+}
+
+#placement-info {
+  position: absolute;
+  pointer-events: none;
+  left: -100px;
+  top: -100px;
+}
