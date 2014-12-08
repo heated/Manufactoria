@@ -4,6 +4,15 @@
   border: black 2px solid;
 }
 
+#robot {
+  position: absolute;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 15px;
+  background: orange;
+}
+
 .tile {
   display: inline-block;
   width: 50px;
