@@ -58,7 +58,7 @@ Game.prototype = {
 		var memoryLength = Math.floor(Math.random() * 10);
 		this.memory = '';
 		for (var i = 0; i < memoryLength; i++) {
-			this.memory += (Math.random() < 0.5) ? 'a' : 'b';
+			this.memory += (Math.random() < 0.5) ? 'R' : 'B';
 		}
 		this.displayMemory();
 	},
@@ -161,45 +161,42 @@ Game.prototype = {
 	},
 
 	iterate: function () {
-		this.displayMemory();
-
 		var currentTile = this.board[this.posY][this.posX];
 		var tileRotation = currentTile.attr('rotation');
+		var end = false;
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
 			// reject
 			$('#test-status').text('Incorrect');
-			this.stopTest();
+			end = true;
 			break;
 		case 'start':
-			this.moveRobot(tileRotation);
 			break;
 		case 'mover':
-			this.moveRobot(tileRotation);
 			break;
 		case 'reader':
-			this.moveRobot(tileRotation);
 			break;
 		case 'push-red':
 			this.memory += 'R';
-			this.moveRobot(tileRotation);
 			break;
 		case 'push-blue':
 			this.memory += 'B';
-			this.moveRobot(tileRotation);
 			break;
 		case 'push-green':
 			this.memory += 'G';
-			this.moveRobot(tileRotation);
 			break;
 		case 'push-yellow':
 			this.memory += 'Y';
-			this.moveRobot(tileRotation);
 			break;
 		case 'accept':
 			$('#test-status').text('Correct!');
-			this.stopTest();
+			end = true;
 			break;
+		}
+		this.moveRobot(tileRotation);
+		this.displayMemory();
+		if (end) {
+			this.stopTest();
 		}
 	},
 
