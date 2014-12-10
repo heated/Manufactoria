@@ -108,13 +108,19 @@ Game.prototype = {
 
 		$('#board-wrapper .tile').click(this.handleClick.bind(this))
 
-		// Test the machine.
-		$('#run').click(function () {
-			self.initializeRobot();
-			self.gameLoop = setInterval(self.iterate.bind(self), 1000);
-		});
+		$('#test').click(this.newTest.bind(this));
 
 		this.setupPlacementInfo();
+	},
+
+	newTest: function () {
+		// no multiple game loops running!
+		if (self.gameLoop) {
+			return;
+		}
+
+		self.initializeRobot();
+		self.gameLoop = setInterval(self.iterate.bind(self), 1000);
 	},
 
 	// create hovering tile placement indicator
@@ -192,21 +198,19 @@ Game.prototype = {
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
 			// reject
-			$('#run-status').text('Incorrect');
-			this.stop();
+			$('#test-status').text('Incorrect');
+			this.stopTest();
 			break;
+		case 'start':
 		case 'mover':
 			this.moveRobot(currentTile.attr('rotation'));
 			break;
 		case 'reader':
 			this.moveRobot(currentTile.attr('rotation'));
 			break;
-		case 'start':
-			this.moveRobot(currentTile.attr('rotation'));
-			break;
 		case 'accept':
-			$('#run-status').text('Correct!');
-			this.stop();
+			$('#test-status').text('Correct!');
+			this.stopTest();
 			break;
 		}
 	},
@@ -235,7 +239,7 @@ Game.prototype = {
 		this.board[this.posY][this.posX].append(this.robot);
 	},
 
-	stop: function () {
+	stopTest: function () {
 		clearInterval(this.gameLoop);
 		this.gameLoop = null;
 		this.robot.detach();
