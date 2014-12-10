@@ -47,9 +47,9 @@ Game.prototype = {
 		this.size = 9;
 		this.halfSize = Math.floor(this.size / 2);
 		this.boardWrapper = $('#board-wrapper');
+		this.placementInfo = $('#placement-info');
 		this.tileSize = this.boardWrapper.width() / this.size;
 		this.flipped = false;
-		this.placementInfo = $('#placement-info');
 		this.changeDirection('down');
 		this.setTileType('mover');
 	},
@@ -64,13 +64,7 @@ Game.prototype = {
 			return new Array(this.size);
 		}, this);
 
-		// fill the board with blank tiles
-		// note: this.board[y][x] refers to the tile x to the right and y down
-		this.boardEach(function (tile, i, j) {
-			var newTile = $('<div class="tile" tile-type="blank">');
-			this.boardWrapper.append(newTile);
-			this.board[i][j] = newTile;
-		}.bind(this));
+		this.fillBoardWithBlankTiles();
 
 		var startingTile = this.board[0][this.halfSize];
 		startingTile.attr('tile-type', 'start');
@@ -78,6 +72,15 @@ Game.prototype = {
 
 		var acceptTile = this.board[this.size - 1][this.halfSize];
 		acceptTile.attr('tile-type', 'accept');
+	},
+
+	fillBoardWithBlankTiles: function () {
+		// note: this.board[y][x] refers to the tile x to the right and y down
+		this.boardEach(function (tile, i, j) {
+			var newTile = $('<div class="tile" tile-type="blank">');
+			this.boardWrapper.append(newTile);
+			this.board[i][j] = newTile;
+		}.bind(this));
 	},
 
 	initializeRobot: function () {
@@ -97,10 +100,7 @@ Game.prototype = {
 	initializeMouseListeners: function () {
 		var self = this;
 
-		// add placement click handlers to all the board tiles
-		this.boardEach(function (tile, i, j) {
-			tile.click(self.handleClick.bind(self));
-		});
+		$('#board-wrapper .tile').click(this.handleClick.bind(this))
 
 		// Test the machine.
 		$('#run').click(function () {
@@ -108,8 +108,17 @@ Game.prototype = {
 			self.gameLoop = setInterval(self.iterate.bind(self), 1000);
 		});
 
-		// create hovering tile placement indicator
+		this.setupPlacementInfo();
+	},
+
+	// create hovering tile placement indicator
+	setupPlacementInfo: function () {
+		var self = this;
+
 		$(document).mousemove(this.updatePlacementInfoLocation.bind(this));
+		this.boardWrapper.mouseover(function () { self.placementInfo.show() });
+		this.boardWrapper.mouseout(function () { self.placementInfo.hide() });
+		this.placementInfo.hide();
 	},
 
 	updatePlacementInfoLocation: function (event) {
@@ -154,6 +163,13 @@ Game.prototype = {
 		}
 
 		var tile = $(event.target);
+		var tileType = tile.attr('tile-type');
+
+		// can't overwrite start and accept tiles!
+		if (tileType === 'start' || tileType === 'accept') {
+			return;
+		}
+
 		tile.attr('rotation', this.rotation);
 		tile.attr('flipped', this.flipped);
 		tile.attr('tile-type', this.tileType);

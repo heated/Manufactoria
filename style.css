@@ -2,6 +2,7 @@
   height: 450px;
   width: 450px;
   border: black 2px solid;
+  cursor: none;
 }
 
 #robot {
@@ -76,6 +77,7 @@
 #placement-info {
   position: absolute;
   pointer-events: none;
+  cursor: none;
   left: -100px;
   top: -100px;
 }
