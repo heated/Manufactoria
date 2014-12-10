@@ -37,9 +37,9 @@
 
 var Game = function () {
 	this.initializeGlobals();
-	this.initializeBoardState();
+	this.initializeBoard();
 	this.initializeListeners();
-	this.displayGame();
+	this.displayMemory();
 };
 
 Game.prototype = {
@@ -52,11 +52,6 @@ Game.prototype = {
 		this.flipped = false;
 		this.changeDirection('down');
 		this.setTileType('mover');
-	},
-
-	initializeBoardState: function () {
-		this.memory = 'aababababaab';
-		this.initializeBoard();
 	},
 
 	initializeBoard: function () {
@@ -84,12 +79,23 @@ Game.prototype = {
 	},
 
 	initializeRobot: function () {
+		this.initializeTrial();
+
 		// begin at the top middle of the board
 		this.posX = this.halfSize;
 		this.posY = 0;
 
 		this.robot = $('<div id="robot">');
 		this.updateRobotPos();
+	},
+
+	initializeTrial: function () {
+		var memoryLength = Math.floor(Math.random() * 10);
+		this.memory = '';
+		for (var i = 0; i < memoryLength; i++) {
+			this.memory += (Math.random() < 0.5) ? 'a' : 'b';
+		}
+		this.displayMemory();
 	},
 
 	initializeListeners: function () {
@@ -175,20 +181,18 @@ Game.prototype = {
 		tile.attr('tile-type', this.tileType);
 	},
 
-	displayGame: function () {
-		this.displayMemory();
-	},
-
 	displayMemory: function () {
 		$('#memory').text(this.memory);
 	},
 
 	iterate: function () {
+		this.displayMemory();
+
 		var currentTile = this.board[this.posY][this.posX];
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
 			// reject
-			alert('Incorrect');
+			$('#run-status').text('Incorrect');
 			this.stop();
 			break;
 		case 'mover':
@@ -201,12 +205,10 @@ Game.prototype = {
 			this.moveRobot(currentTile.attr('rotation'));
 			break;
 		case 'accept':
-			alert('Correct!');
+			$('#run-status').text('Correct!');
 			this.stop();
 			break;
 		}
-
-		this.displayGame();
 	},
 
 	moveRobot: function (direction) {
