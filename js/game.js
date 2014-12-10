@@ -1,40 +1,5 @@
 // Manufactoria 2: The dot deliverance.
 
-// var Adder = function () {
-	
-// }
-
-// var Part = function (rotation, flip, type) {
-// 	this.rotation = rotation;
-// 	this.flipped = flip;
-// 	// Maybe these should be further objects. this.effect contains info on how
-// 	// to process memory, outputting an effect on memory and a direction to
-// 	// move. It also should contain the image for the tile.
-// 	switch (type) {
-// 		case 'convey':
-// 			this.effect = new function () {
-// 				// TODO fill in
-// 		 	};
-// 		break;
-// 		case 'split':
-// 			this.effect = new function () {
-
-// 			};
-// 		break;
-// 		case 'add':
-// 			this.effect = new function () {
-
-// 			};
-// 		break;
-// 		//case 'start':
-// 		//case 'accept':
-// 	}
-// };
-
-// Part.prototype = {
-	
-// };
-
 var Game = function () {
 	this.initializeGlobals();
 	this.initializeBoard();
@@ -151,6 +116,10 @@ Game.prototype = {
 		key('0', this.setTileType.bind(this, 'blank'));
 		key('1', this.setTileType.bind(this, 'mover'));
 		key('2', this.setTileType.bind(this, 'reader'));
+		key('3', this.setTileType.bind(this, 'push-red'));
+		key('4', this.setTileType.bind(this, 'push-blue'));
+		key('5', this.setTileType.bind(this, 'push-green'));
+		key('6', this.setTileType.bind(this, 'push-yellow'));
 	},
 
 	changeDirection: function (direction) {
@@ -195,6 +164,7 @@ Game.prototype = {
 		this.displayMemory();
 
 		var currentTile = this.board[this.posY][this.posX];
+		var tileRotation = currentTile.attr('rotation');
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
 			// reject
@@ -202,11 +172,29 @@ Game.prototype = {
 			this.stopTest();
 			break;
 		case 'start':
+			this.moveRobot(tileRotation);
+			break;
 		case 'mover':
-			this.moveRobot(currentTile.attr('rotation'));
+			this.moveRobot(tileRotation);
 			break;
 		case 'reader':
-			this.moveRobot(currentTile.attr('rotation'));
+			this.moveRobot(tileRotation);
+			break;
+		case 'push-red':
+			this.memory += 'R';
+			this.moveRobot(tileRotation);
+			break;
+		case 'push-blue':
+			this.memory += 'B';
+			this.moveRobot(tileRotation);
+			break;
+		case 'push-green':
+			this.memory += 'G';
+			this.moveRobot(tileRotation);
+			break;
+		case 'push-yellow':
+			this.memory += 'Y';
+			this.moveRobot(tileRotation);
 			break;
 		case 'accept':
 			$('#test-status').text('Correct!');

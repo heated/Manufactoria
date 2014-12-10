@@ -41,6 +41,22 @@
 	background-image: url(sprites/accept.png);
 }
 
+.tile[tile-type=push-red] {
+  background-image: url(sprites/push-red.png);
+}
+
+.tile[tile-type=push-blue] {
+  background-image: url(sprites/push-blue.png);
+}
+
+.tile[tile-type=push-green] {
+  background-image: url(sprites/push-green.png);
+}
+
+.tile[tile-type=push-yellow] {
+  background-image: url(sprites/push-yellow.png);
+}
+
 [rotation=left] {
 	transform: rotate(0turn)
 }
