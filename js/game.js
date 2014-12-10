@@ -162,7 +162,6 @@ Game.prototype = {
 
 	iterate: function () {
 		var currentTile = this.board[this.posY][this.posX];
-		var tileRotation = currentTile.attr('rotation');
 		var end = false;
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
@@ -193,7 +192,8 @@ Game.prototype = {
 			end = true;
 			break;
 		}
-		this.moveRobot(tileRotation);
+		
+		this.moveRobot(currentTile.attr('rotation'), currentTile.attr('flipped'));
 		this.displayMemory();
 		if (end) {
 			this.stopTest();
