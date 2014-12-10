@@ -115,12 +115,12 @@ Game.prototype = {
 
 	newTest: function () {
 		// no multiple game loops running!
-		if (self.gameLoop) {
+		if (this.gameLoop) {
 			return;
 		}
 
-		self.initializeRobot();
-		self.gameLoop = setInterval(self.iterate.bind(self), 1000);
+		this.initializeRobot();
+		this.gameLoop = setInterval(this.iterate.bind(this), 1000);
 	},
 
 	// create hovering tile placement indicator
