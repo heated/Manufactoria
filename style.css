@@ -97,3 +97,9 @@
   left: -100px;
   top: -100px;
 }
+
+.unselectable {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}

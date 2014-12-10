@@ -17,6 +17,7 @@ Game.prototype = {
 		this.flipped = false;
 		this.changeDirection('down');
 		this.setTileType('mover');
+		this.placingTiles = false;
 	},
 
 	initializeBoard: function () {
@@ -55,12 +56,16 @@ Game.prototype = {
 	},
 
 	initializeTrial: function () {
-		var memoryLength = Math.floor(Math.random() * 10);
-		this.memory = '';
-		for (var i = 0; i < memoryLength; i++) {
-			this.memory += (Math.random() < 0.5) ? 'R' : 'B';
-		}
+		this.randomizeMemory();
 		this.displayMemory();
+	},
+
+	randomizeMemory: function () {
+		this.memory = '';
+
+		_.times(_.random(9), function () {
+			this.memory += _.random(1) === 0 ? 'R' : 'B';
+		}, this);
 	},
 
 	initializeListeners: function () {
@@ -71,11 +76,21 @@ Game.prototype = {
 	initializeMouseListeners: function () {
 		var self = this;
 
-		$('#board-wrapper .tile').click(this.handleClick.bind(this))
-
 		$('#test').click(this.newTest.bind(this));
 
 		this.setupPlacementInfo();
+
+		this.boardWrapper.mousedown(function () { self.placingTiles = true; });
+		this.boardWrapper.mouseup(function () { self.placingTiles = false; });
+
+		var boardTiles = this.boardWrapper.find('.tile');
+
+		boardTiles.click(this.handleClick.bind(this));
+		boardTiles.mousemove(function (event) {
+			if (self.placingTiles) {
+				self.handleClick(event);
+			}
+		});
 	},
 
 	newTest: function () {
@@ -162,42 +177,44 @@ Game.prototype = {
 
 	iterate: function () {
 		var currentTile = this.board[this.posY][this.posX];
-		var end = false;
+		var tileRotation = currentTile.attr('rotation');
+		
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
 			// reject
 			$('#test-status').text('Incorrect');
-			end = true;
+			this.stopTest();
 			break;
 		case 'start':
-			break;
 		case 'mover':
+			this.moveRobot(tileRotation);
 			break;
 		case 'reader':
+			// complex logic
 			break;
 		case 'push-red':
 			this.memory += 'R';
+			this.moveRobot(tileRotation);
 			break;
 		case 'push-blue':
 			this.memory += 'B';
+			this.moveRobot(tileRotation);
 			break;
 		case 'push-green':
 			this.memory += 'G';
+			this.moveRobot(tileRotation);
 			break;
 		case 'push-yellow':
 			this.memory += 'Y';
+			this.moveRobot(tileRotation);
 			break;
 		case 'accept':
 			$('#test-status').text('Correct!');
-			end = true;
+			this.stopTest();
 			break;
 		}
 		
-		this.moveRobot(currentTile.attr('rotation'), currentTile.attr('flipped'));
 		this.displayMemory();
-		if (end) {
-			this.stopTest();
-		}
 	},
 
 	moveRobot: function (direction) {
