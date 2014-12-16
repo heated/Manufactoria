@@ -29,8 +29,12 @@
 	background-image: url(sprites/mover.png);
 }
 
-.tile[tile-type=reader] {
-	background-image: url(sprites/reader.png);
+.tile[tile-type=reader-blue-red] {
+	background-image: url(sprites/reader-blue-red.png);
+}
+
+.tile[tile-type=reader-green-yellow] {
+  background-image: url(sprites/reader-green-yellow.png);
 }
 
 .tile[tile-type=start] {

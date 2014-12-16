@@ -130,11 +130,12 @@ Game.prototype = {
 
 		key('0', this.setTileType.bind(this, 'blank'));
 		key('1', this.setTileType.bind(this, 'mover'));
-		key('2', this.setTileType.bind(this, 'reader'));
-		key('3', this.setTileType.bind(this, 'push-red'));
-		key('4', this.setTileType.bind(this, 'push-blue'));
-		key('5', this.setTileType.bind(this, 'push-green'));
-		key('6', this.setTileType.bind(this, 'push-yellow'));
+		key('2', this.setTileType.bind(this, 'reader-blue-red'));
+		key('3', this.setTileType.bind(this, 'reader-green-yellow'));
+		key('4', this.setTileType.bind(this, 'push-red'));
+		key('5', this.setTileType.bind(this, 'push-blue'));
+		key('6', this.setTileType.bind(this, 'push-green'));
+		key('7', this.setTileType.bind(this, 'push-yellow'));
 	},
 
 	changeDirection: function (direction) {
@@ -189,14 +190,20 @@ Game.prototype = {
 		case 'mover':
 			this.moveRobot(tileRotation);
 			break;
-		case 'reader':
-			// complex gate logic
+		case 'reader-blue-red':
 			var blob = this.memory[0];
 			if (blob === 'R' || blob === 'B') {
-				this.memory = this.memory.slice(1); // shift
-				this.moveRobot( this.readerOutputDirection(currentTile, blob) );
+				this.consumeBlobAndOutput(currentTile, blob);
 			} else {
-				this.moveRobot( tileRotation );
+				this.moveRobot(tileRotation);
+			}
+			break;
+		case 'reader-green-yellow':
+			var blob = this.memory[0];
+			if (blob === 'G' || blob === 'Y') {
+				this.consumeBlobAndOutput(currentTile, blob);
+			} else {
+				this.moveRobot(tileRotation);
 			}
 			break;
 		case 'push-red':
@@ -231,8 +238,13 @@ Game.prototype = {
 		return directions[newIndex];
 	},
 
+	consumeBlobAndOutput: function (currentTile, blob) {
+		this.memory = this.memory.slice(1); // shift
+		this.moveRobot( this.readerOutputDirection(currentTile, blob) );
+	},
+
 	readerOutputDirection: function (tile, blob) {
-		var goingRight = (blob === 'R');
+		var goingRight = (blob === 'R' || blob === 'Y');
 		if (tile.attr('flipped') === 'true') {
 			goingRight = !goingRight;
 		}
