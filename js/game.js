@@ -190,7 +190,14 @@ Game.prototype = {
 			this.moveRobot(tileRotation);
 			break;
 		case 'reader':
-			// complex logic
+			// complex gate logic
+			var blob = this.memory[0];
+			if (blob === 'R' || blob === 'B') {
+				this.memory = this.memory.slice(1); // shift
+				this.moveRobot( this.readerOutputDirection(currentTile, blob) );
+			} else {
+				this.moveRobot( tileRotation );
+			}
 			break;
 		case 'push-red':
 			this.memory += 'R';
@@ -215,6 +222,21 @@ Game.prototype = {
 		}
 		
 		this.displayMemory();
+	},
+
+	addRotation: function (rotation, clockWiseTurns) {
+		var directions = ['left', 'up', 'right', 'down'];
+		var index = directions.indexOf(rotation);
+		var newIndex = (index + clockWiseTurns) % directions.length;
+		return directions[newIndex];
+	},
+
+	readerOutputDirection: function (tile, blob) {
+		var goingRight = (blob === 'R');
+		if (tile.attr('flipped') === 'true') {
+			goingRight = !goingRight;
+		}
+		return this.addRotation(tile.attr('rotation'), goingRight ? 1 : 3);
 	},
 
 	moveRobot: function (direction) {
