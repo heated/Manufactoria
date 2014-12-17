@@ -1,17 +1,26 @@
 // Manufactoria 2: The dot deliverance.
 
-var Game = function () {
+var Level = function (options) {
+		// testFn: function (testString) { return true; },
+		// availableTileTypes: ['mover']
+	$('#level-name').text(options.name);
+	$('#level-instructions').text(options.instructions);
+	this.size = options.size;
+	this.testFn = options.testFn;
+	// do some crazy shit with options.availableTileTypes
+
 	this.initializeGlobals();
 	this.initializeBoard();
 	this.initializeListeners();
 	this.displayMemory();
 };
 
-Game.prototype = {
+Level.prototype = {
 	initializeGlobals: function () {
-		this.size = 9;
 		this.halfSize = Math.floor(this.size / 2);
 		this.boardWrapper = $('#board-wrapper');
+		this.boardWrapper.width(450);
+		this.boardWrapper.height(450);
 		this.placementInfo = $('#placement-info');
 		this.tileSize = this.boardWrapper.width() / this.size;
 		this.flipped = false;
@@ -21,18 +30,15 @@ Game.prototype = {
 	},
 
 	initializeBoard: function () {
-		this.board = _.map(new Array(this.size), function () {
-			return new Array(this.size);
-		}, this);
-
+		this.board = this.new2DSquareArray(this.size);
 		this.fillBoardWithBlankTiles();
+		this.setupStartAndAcceptTiles();
+	},
 
-		var startingTile = this.board[0][this.halfSize];
-		startingTile.attr('tile-type', 'start');
-		startingTile.attr('rotation', 'down');
-
-		var acceptTile = this.board[this.size - 1][this.halfSize];
-		acceptTile.attr('tile-type', 'accept');
+	new2DSquareArray: function (size) {
+		return _.map(new Array(size), function () {
+			return new Array(size);
+		});
 	},
 
 	fillBoardWithBlankTiles: function () {
@@ -42,6 +48,19 @@ Game.prototype = {
 			this.boardWrapper.append(newTile);
 			this.board[i][j] = newTile;
 		}.bind(this));
+
+		// set the width and height of all tiles on the screen to the tile size of the level
+		$('.tile').width(this.tileSize);
+		$('.tile').height(this.tileSize);
+	},
+
+	setupStartAndAcceptTiles: function () {
+		var startingTile = this.board[0][this.halfSize];
+		startingTile.attr('tile-type', 'start');
+		startingTile.attr('rotation', 'down');
+
+		var acceptTile = this.board[this.size - 1][this.halfSize];
+		acceptTile.attr('tile-type', 'accept');
 	},
 
 	initializeRobot: function () {
@@ -52,6 +71,9 @@ Game.prototype = {
 		this.posY = 0;
 
 		this.robot = $('<div id="robot">');
+		this.robot.width(this.tileSize);
+		this.robot.height(this.tileSize);
+		this.boardWrapper.append(this.robot);
 		this.updateRobotPos();
 	},
 
@@ -66,6 +88,8 @@ Game.prototype = {
 		_.times(_.random(9), function () {
 			this.memory += _.random(1) === 0 ? 'R' : 'B';
 		}, this);
+
+		this.initialTrialMemory = this.memory;
 	},
 
 	initializeListeners: function () {
@@ -182,9 +206,7 @@ Game.prototype = {
 		
 		switch (currentTile.attr('tile-type')) {
 		case 'blank':
-			// reject
-			$('#test-status').text('Incorrect');
-			this.stopTest();
+			this.finishTest('reject');
 			break;
 		case 'start':
 		case 'mover':
@@ -223,8 +245,7 @@ Game.prototype = {
 			this.moveRobot(tileRotation);
 			break;
 		case 'accept':
-			$('#test-status').text('Correct!');
-			this.stopTest();
+			this.finishTest('accept');
 			break;
 		}
 		
@@ -271,8 +292,24 @@ Game.prototype = {
 	},
 
 	updateRobotPos: function () {
-		this.robot.detach();
-		this.board[this.posY][this.posX].append(this.robot);
+		// this.robot.detach();
+		// this.board[this.posY][this.posX].append(this.robot);
+		this.robot.css('top', this.posY * this.tileSize);
+		this.robot.css('left', this.posX * this.tileSize);
+	},
+
+	finishTest: function (finishState) {
+		var accepted = finishState === 'accept';
+		var expectedResult = this.testFn(this.initialTrialMemory);
+		if (typeof expectedResult === 'string') {
+			var correctAnswer = accepted && this.memory === expectedResult;
+		} else {
+			var correctAnswer = accepted === expectedResult;
+		}
+
+		$('#test-status').text(correctAnswer ? 'Correct!' : 'Incorrect');
+
+		this.stopTest();
 	},
 
 	stopTest: function () {
@@ -290,6 +327,34 @@ Game.prototype = {
 	}
 };
 
-$(function () {
-	var game = new Game();
+$(document).ready(function () {
+	var levels = [
+		{
+			name: 'Robotoast',
+			size: 5,
+			testFn: function () { return true; },
+			instructions: 'Accept all robots! Move the robots down to the accept tile.',
+			availableTileTypes: ['mover']
+		},
+		{
+			name: 'Robocoffee',
+			size: 5,
+			testFn: function (testString) { return testString[0] === 'B'; },
+			instructions: 'Accept robots that start with B!',
+			availableTileTypes: ['mover', 'reader-blue-red']
+		},
+		{
+			name: 'Robolamp',
+			size: 7,
+			testFn: function (testString) {
+				return (testString.split('B').length - 1) >= 3;
+			},
+			instructions: 'Accept robots with at least three Bs!',
+			availableTileTypes: ['mover', 'reader-blue-red']
+		}
+	];
+
+	var levelOne = new Level(levels[2]);
 });
+
+// Each level is described by a size, a function, and maybe a set of test strings. The function is given the input string and returns either true for accept, false for reject, or a string for a transformation. It might also be a good idea to have a list of allowed tile types for each level.

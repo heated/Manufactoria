@@ -1,6 +1,5 @@
 #board-wrapper {
-  height: 450px;
-  width: 450px;
+  position: relative;
   border: black 2px solid;
   cursor: none;
 }
@@ -8,16 +7,12 @@
 #robot {
   position: absolute;
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin: 15px;
-  background: orange;
+  background-size: cover;
+  background-image: url(sprites/robot.png);
 }
 
 .tile {
   display: inline-block;
-  width: 50px;
-  height: 50px;
   background-size: cover;
 }
 
@@ -100,6 +95,7 @@
   cursor: none;
   left: -100px;
   top: -100px;
+  border: black 1px dashed;
 }
 
 .unselectable {
