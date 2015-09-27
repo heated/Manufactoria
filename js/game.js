@@ -149,6 +149,10 @@ Level.prototype = {
 		key('up', this.changeDirection.bind(this, 'up'));
 		key('right', this.changeDirection.bind(this, 'right'));
 		key('down', this.changeDirection.bind(this, 'down'));
+		key('a', this.changeDirection.bind(this, 'left'));
+		key('w', this.changeDirection.bind(this, 'up'));
+		key('d', this.changeDirection.bind(this, 'right'));
+		key('s', this.changeDirection.bind(this, 'down'));
 
 		key('space', this.flipOrientation.bind(this));
 
