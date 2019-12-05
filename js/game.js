@@ -7,6 +7,7 @@ var Level = function (options) {
 	$('#level-instructions').text(options.instructions);
 	this.size = options.size;
 	this.testFn = options.testFn;
+	this.nextLevel = options.nextLevel;
 	// do some crazy shit with options.availableTileTypes
 
 	this.initializeGlobals();
@@ -31,6 +32,8 @@ Level.prototype = {
 
 	initializeBoard: function () {
 		this.board = this.new2DSquareArray(this.size);
+
+		this.emptyBoardOfTiles();
 		this.fillBoardWithBlankTiles();
 		this.setupStartAndAcceptTiles();
 	},
@@ -39,6 +42,10 @@ Level.prototype = {
 		return _.map(new Array(size), function () {
 			return new Array(size);
 		});
+	},
+
+	emptyBoardOfTiles: function () {
+		this.boardWrapper.empty();
 	},
 
 	fillBoardWithBlankTiles: function () {
@@ -124,7 +131,11 @@ Level.prototype = {
 		}
 
 		this.initializeRobot();
-		this.gameLoop = setInterval(this.iterate.bind(this), 1000);
+		this.gameLoop = setInterval(this.iterate.bind(this), 1000 / this.getTestSpeed());
+	},
+
+	getTestSpeed: function () {
+		return parseInt($('#testSpeed')[0].value) + 1;
 	},
 
 	// create hovering tile placement indicator
@@ -311,9 +322,13 @@ Level.prototype = {
 			var correctAnswer = accepted === expectedResult;
 		}
 
-		$('#test-status').text(correctAnswer ? 'Correct!' : 'Incorrect');
-
 		this.stopTest();
+		if (correctAnswer) {
+			$('#test-status').text('Correct');
+			this.lastLevelCheck();
+		} else {
+			$('#test-status').text('Incorrect');
+		}
 	},
 
 	stopTest: function () {
@@ -328,37 +343,57 @@ Level.prototype = {
 				func(this.board[i][j], i, j);
 			}
 		}
+	},
+
+	lastLevelCheck: function () {
+		if (this.nextLevel != null) {
+			this.gotoNextLevel();
+		} else {
+			alert('Congratulations, your the best!');
+		}
+	},
+
+	gotoNextLevel: function() {
+		this.removeEventListeners();
+		new Level(window.levels[this.nextLevel]);
+	},
+
+	removeEventListeners: function () {
+		$('#test').unbind();
 	}
 };
 
 $(document).ready(function () {
-	var levels = [
+	window.levels = [
 		{
 			name: 'Robotoast',
 			size: 5,
 			testFn: function () { return true; },
 			instructions: 'Accept all robots! Move the robots down to the accept tile.',
-			availableTileTypes: ['mover']
+			availableTileTypes: ['mover'],
+			nextLevel: 1
 		},
 		{
 			name: 'Robocoffee',
-			size: 5,
+			size: 7,
 			testFn: function (testString) { return testString[0] === 'B'; },
 			instructions: 'Accept robots that start with B!',
-			availableTileTypes: ['mover', 'reader-blue-red']
+			availableTileTypes: ['mover', 'reader-blue-red'],
+			nextLevel: 2
 		},
 		{
 			name: 'Robolamp',
-			size: 7,
+			size: 9,
 			testFn: function (testString) {
 				return (testString.split('B').length - 1) >= 3;
 			},
 			instructions: 'Accept robots with at least three Bs!',
-			availableTileTypes: ['mover', 'reader-blue-red']
+			availableTileTypes: ['mover', 'reader-blue-red'],
+			nextLevel: null
 		}
 	];
 
-	var levelOne = new Level(levels[2]);
+	var levelOne = new Level(window.levels[0]);
 });
 
 // Each level is described by a size, a function, and maybe a set of test strings. The function is given the input string and returns either true for accept, false for reject, or a string for a transformation. It might also be a good idea to have a list of allowed tile types for each level.
